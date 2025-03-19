@@ -261,6 +261,16 @@
       border-radius: 2px;
     }
 
+    #error-container {
+      position: fixed;
+      bottom: 12px;
+      left: auto;
+      right: auto;
+      width: 100%;
+      padding: 0 10%;
+      z-index: 1000;
+    }
+
     /* Error message */
     .error-message {
       margin-top: 16px;
@@ -329,35 +339,7 @@
       margin-right: 8px;
     }
 
-    /* Dropdown styles */
-    .dropdown {
-      position: absolute;
-      right: 16px;
-      top: 60px;
-      z-index: 10;
-      background-color: var(--color-bg-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .dropdown-content {
-      display: flex;
-      flex-direction: column;
-      min-width: 180px;
-    }
-
-    .dropdown-content a {
-      padding: 10px 16px;
-      text-decoration: none;
-      color: var(--color-text-primary);
-      font-size: 0.875rem;
-    }
-
-    .dropdown-content a:hover {
-      background-color: var(--color-hover);
-    }
-
+    /* Search container styles */
     .search-container {
       display: flex;
       align-items: center;
@@ -499,6 +481,7 @@
   </header>
 
   <!-- Main content with columns -->
+  <div id="error-container"></div>
   <div class="main-content" id="main-content">
     <!-- Input Column -->
     <div class="column" id="input-column">
@@ -507,20 +490,10 @@
         <div class="btn-group">
           <button id="format-btn">Format</button>
           <button id="clear-btn">Clear</button>
-          <button id="examples-btn">Examples</button>
         </div>
       </div>
       <div class="column-content">
         <textarea id="json-input" placeholder="Paste your JSON here..."></textarea>
-        <div id="examples-dropdown" class="dropdown" style="display: none;">
-          <div class="dropdown-content">
-            <a href="#" data-example="simple">Simple Object</a>
-            <a href="#" data-example="nested">Nested Objects</a>
-            <a href="#" data-example="array">Array Example</a>
-            <a href="#" data-example="complex">Complex Structure</a>
-          </div>
-        </div>
-        <div id="error-container"></div>
         <div id="json-stats" class="json-stats" style="display: none;">
           <div><span class="stat-label">Objetos:</span> <span id="object-count">0</span></div>
           <div><span class="stat-label">Arrays:</span> <span id="array-count">0</span></div>
@@ -562,8 +535,6 @@
     const jsonInput = document.getElementById('json-input');
     const formatBtn = document.getElementById('format-btn');
     const clearBtn = document.getElementById('clear-btn');
-    const examplesBtn = document.getElementById('examples-btn');
-    const examplesDropdown = document.getElementById('examples-dropdown');
     const errorContainer = document.getElementById('error-container');
     const treeContainer = document.getElementById('tree-container');
     const tableContainer = document.getElementById('table-container');
@@ -649,28 +620,6 @@
     themeToggleBtn.addEventListener('click', () => {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       setTheme(currentTheme === 'light' ? 'dark' : 'light');
-    });
-
-    // Toggle examples dropdown
-    examplesBtn.addEventListener('click', () => {
-      examplesDropdown.style.display = examplesDropdown.style.display === 'none' ? 'block' : 'none';
-    });
-
-    // Close dropdown when clicking elsewhere
-    document.addEventListener('click', (e) => {
-      if (!examplesBtn.contains(e.target) && !examplesDropdown.contains(e.target)) {
-        examplesDropdown.style.display = 'none';
-      }
-    });
-
-    // Handle example selection
-    document.querySelectorAll('#examples-dropdown a').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const example = e.target.getAttribute('data-example');
-        loadJsonExample(example);
-        examplesDropdown.style.display = 'none';
-      });
     });
 
     // Save JSON data on change
@@ -1459,151 +1408,6 @@
 
       table.appendChild(tbody);
       return table;
-    }
-
-    // JSON Examples
-    function loadJsonExample(example) {
-      let json = '';
-
-      switch (example) {
-        case 'simple':
-          json = `{
-  "name": "John Doe",
-  "age": 30,
-  "email": "john@example.com",
-  "isSubscribed": true,
-  "interests": ["programming", "design", "hiking"]
-}`;
-          break;
-        case 'nested':
-          json = `{
-  "person": {
-    "name": "Maria García",
-    "contact": {
-      "email": "maria@example.com",
-      "phone": "+34 600 123 456",
-      "address": {
-        "street": "Calle Mayor 10",
-        "city": "Madrid",
-        "country": "Spain",
-        "postalCode": "28001"
-      }
-    },
-    "profession": "Software Developer"
-  },
-  "company": {
-    "name": "Tech Solutions SL",
-    "founded": 2010,
-    "active": true
-  }
-}`;
-          break;
-        case 'array':
-          json = `[
-  {
-    "id": 1,
-    "task": "Complete project proposal",
-    "completed": true,
-    "priority": "high",
-    "dueDate": "2023-06-15"
-  },
-  {
-    "id": 2,
-    "task": "Review code changes",
-    "completed": false,
-    "priority": "medium",
-    "dueDate": "2023-06-20"
-  },
-  {
-    "id": 3,
-    "task": "Update documentation",
-    "completed": false,
-    "priority": "low",
-    "dueDate": "2023-06-25"
-  },
-  {
-    "id": 4,
-    "task": "Test new features",
-    "completed": false,
-    "priority": "high",
-    "dueDate": "2023-06-30"
-  }
-]`;
-          break;
-        case 'complex':
-          json = `{
-  "apiVersion": "2.0",
-  "data": {
-    "users": [
-      {
-        "id": "u123",
-        "name": "Ana Martínez",
-        "role": "admin",
-        "active": true,
-        "metadata": {
-          "lastLogin": "2023-06-01T14:30:45Z",
-          "createdAt": "2022-01-15T09:20:10Z"
-        },
-        "permissions": ["read", "write", "delete", "manage"],
-        "settings": {
-          "notifications": {
-            "email": true,
-            "sms": false,
-            "push": true
-          },
-          "theme": "dark"
-        }
-      },
-      {
-        "id": "u456",
-        "name": "Carlos Rodríguez",
-        "role": "editor",
-        "active": true,
-        "metadata": {
-          "lastLogin": "2023-06-02T10:15:32Z",
-          "createdAt": "2022-03-20T11:45:30Z"
-        },
-        "permissions": ["read", "write"],
-        "settings": {
-          "notifications": {
-            "email": true,
-            "sms": true,
-            "push": false
-          },
-          "theme": "light"
-        }
-      }
-    ],
-    "stats": {
-      "totalUsers": 2,
-      "activeUsers": 2,
-      "averageSessionTime": 45.5,
-      "topFeatures": ["dashboard", "reports", "analytics"],
-      "usageByDevice": {
-        "mobile": 0.35,
-        "tablet": 0.15,
-        "desktop": 0.5
-      }
-    },
-    "system": {
-      "version": "1.5.2",
-      "lastUpdate": "2023-05-28T00:00:00Z",
-      "status": "operational",
-      "maintenance": {
-        "scheduled": true,
-        "date": "2023-06-10T02:00:00Z",
-        "duration": 120
-      }
-    }
-  },
-  "success": true,
-  "processingTime": 0.023
-}`;
-          break;
-      }
-
-      jsonInput.value = json;
-      formatJson();
     }
 
     // Calculate JSON statistics
