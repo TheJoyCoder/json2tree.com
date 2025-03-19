@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>json2tree.com | JSON Visualizer | JSON to Tree | JSON to Table</title>
+  <style>
+    /* Variables para temas */
+    :root {
+      --color-bg-primary: #ffffff;
+      --color-bg-secondary: #f9fafb;
+      --color-text-primary: #1f2937;
+      --color-text-secondary: #6b7280;
+      --color-border: #e5e7eb;
+      --color-border-light: #f3f4f6;
+      --color-hover: #f3f4f6;
+      --color-error-bg: #fee2e2;
+      --color-error-text: #b91c1c;
+      --color-string: #16a34a;
+      --color-number: #2563eb;
+      --color-boolean: #9333ea;
+      --color-null: #dc2626;
+      --color-muted: #9ca3af;
+    }
+
+    /* Tema oscuro */
+    [data-theme="dark"] {
+      --color-bg-primary: #1f2937;
+      --color-bg-secondary: #111827;
+      --color-text-primary: #f9fafb;
+      --color-text-secondary: #d1d5db;
+      --color-border: #374151;
+      --color-border-light: #374151;
+      --color-hover: #374151;
+      --color-error-bg: #7f1d1d;
+      --color-error-text: #fecaca;
+      --color-string: #4ade80;
+      --color-number: #60a5fa;
+      --color-boolean: #c084fc;
+      --color-null: #f87171;
+      --color-muted: #9ca3af;
+    }
+
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Header styles */
+    header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--color-bg-primary);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Button styles */
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 4px;
+      color: var(--color-text-secondary);
+    }
+
+    button:hover {
+      background-color: var(--color-hover);
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Main content and columns */
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--color-border);
+    }
+
+    .column-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--color-bg-primary);
+    }
+
+    .column-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    .column-content {
+      flex: 1;
+      padding: 12px 16px;
+      overflow: auto;
+      background-color: var(--color-bg-primary);
+    }
+
+    /* Input column */
+    #json-input {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: none;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.875rem;
+      outline: none;
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+    }
+
+    /* Tree view */
+    .tree-node {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.875rem;
+      margin-bottom: 2px;
+    }
+
+    .tree-content {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .tree-toggle {
+      margin-right: 4px;
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+    }
+
+    .tree-label {
+      color: var(--color-text-primary);
+    }
+
+    .tree-children {
+      margin-left: 16px;
+      position: relative;
+    }
+
+    .tree-children::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 0;
+      height: 100%;
+      width: 1px;
+      background-color: var(--color-border);
+    }
+
+    /* Table view */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead {
+      background-color: var(--color-bg-secondary);
+    }
+
+    th {
+      text-align: left;
+      padding: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--color-border-light);
+      color: var(--color-text-primary);
+    }
+
+    tr:hover {
+      background-color: var(--color-hover);
+    }
+
+    .table-toggle {
+      margin-right: 4px;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+    }
+
+    .nested-table {
+      padding-left: 20px;
+    }
+
+    /* Value colors */
+    .string-value {
+      color: var(--color-string);
+    }
+
+    .number-value {
+      color: var(--color-number);
+    }
+
+    .boolean-value {
+      color: var(--color-boolean);
+    }
+
+    .null-value {
+      color: var(--color-null);
+    }
+
+    /* Highlight search results */
+    .search-highlight {
+      background-color: rgba(250, 204, 21, 0.3);
+      padding: 2px;
+      border-radius: 2px;
+    }
+
+    /* Error overlay */
+    .error-overlay {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+      z-index: 1000;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .error-message {
+      margin-right: 20px;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .error-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.1);
+      color: var(--color-error-text);
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .error-close:hover {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      margin-right: 8px;
+    }
+
+    /* Dropdown styles */
+    .dropdown {
+      position: absolute;
+      right: 16px;
+      top: 60px;
+      z-index: 10;
+      background-color: var(--color-bg-primary);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 180px;
+    }
+
+    .dropdown-content a {
+      padding: 10px 16px;
+      text-decoration: none;
+      color: var(--color-text-primary);
+      font-size: 0.875rem;
+    }
+
+    .dropdown-content a:hover {
+      background-color: var(--color-hover);
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .search-container input {
+      padding: 8px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .search-container button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 4px;
+      color: var(--color-text-secondary);
+    }
+
+    .search-container button:hover {
+      background-color: var(--color-hover);
+    }
+
+    .search-container button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Search stats */
+    .search-stats {
+      display: flex;
+      align-items: center;
+      font-size: 0.75rem;
+      margin-left: 8px;
+      color: var(--color-text-secondary);
+    }
+
+    .search-stats button {
+      padding: 2px;
+    }
+
+    /* JSON Stats */
+    .json-stats {
+      margin-top: 16px;
+      padding: 12px;
+      background-color: var(--color-bg-secondary);
+      border-radius: 4px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 0.875rem;
+    }
+
+    .stat-label {
+      color: var(--color-text-secondary);
+      margin-right: 8px;
+    }
+
+    /* Context Menu */
+    .context-menu {
+      position: absolute;
+      z-index: 1000;
+      background-color: var(--color-bg-primary);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      min-width: 180px;
+      right: 16px;
+      top: 125px;
+    }
+
+    .menu-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      color: var(--color-text-primary);
+      font-size: 0.875rem;
+    }
+
+    .menu-item:hover {
+      background-color: var(--color-hover);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header with toggle controls -->
+  <header>
+    <h1>JSON Visualizer</h1>
+    <div class="header-controls">
+      <!-- Tema claro/oscuro -->
+      <button id="theme-toggle" class="theme-toggle" title="Cambiar tema">
+        <svg id="theme-toggle-light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg id="theme-toggle-dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Buscar en JSON..." />
+        <button id="search-btn" title="Buscar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <div id="search-stats" class="search-stats" style="display: none;">
+          <span id="search-count">0</span> resultados
+          <button id="prev-result" title="Resultado anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button id="next-result" title="Siguiente resultado">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <button id="toggle-input" title="Toggle Input">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 18 22 12 16 6"></path>
+          <path d="M8 6 2 12 8 18"></path>
+        </svg>
+      </button>
+      <button id="toggle-tree" title="Toggle Tree View">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2H9a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"></path>
+          <path d="M13 2v7h7"></path>
+          <path d="M9 16h6"></path>
+          <path d="M9 12h6"></path>
+        </svg>
+      </button>
+      <button id="toggle-table" title="Toggle Table View">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="3" y1="15" x2="21" y2="15"></line>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+          <line x1="15" y1="3" x2="15" y2="21"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main content with columns -->
+  <div id="main-content" class="main-content">
+    <div id="column-input" class="column" style="width: 100%;">
+      <div class="column-header">
+        <span class="column-title">JSON Input</span>
+        <div class="btn-group">
+          <button id="format-btn" title="Formatear JSON">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10H3"></path>
+              <path d="M21 6H3"></path>
+              <path d="M21 14H3"></path>
+              <path d="M21 18H3"></path>
+            </svg>
+          </button>
+          <button id="clear-btn" title="Limpiar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button id="examples-btn" title="Ejemplos">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="column-content">
+        <textarea id="json-input" placeholder="Pega tu JSON aquí o carga un ejemplo del menú"></textarea>
+      </div>
+    </div>
+
+    <div id="column-tree" class="column" style="display: none;">
+      <div class="column-header">
+        <span class="column-title">Visualización de Árbol</span>
+        <div class="btn-group">
+          <button id="expand-all-tree" title="Expandir todo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="7 13 12 18 17 13"></polyline>
+              <polyline points="7 6 12 11 17 6"></polyline>
+            </svg>
+          </button>
+          <button id="collapse-all-tree" title="Colapsar todo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="7 11 12 6 17 11"></polyline>
+              <polyline points="7 18 12 13 17 18"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="column-content" id="tree-view">
+        <div class="empty-state">Formatea el JSON para visualizarlo</div>
+      </div>
+    </div>
+
+    <div id="column-table" class="column" style="display: none;">
+      <div class="column-header">
+        <span class="column-title">Visualización de Tabla</span>
+        <div class="btn-group">
+          <button id="expand-all-table" title="Expandir todo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="7 13 12 18 17 13"></polyline>
+              <polyline points="7 6 12 11 17 6"></polyline>
+            </svg>
+          </button>
+          <button id="collapse-all-table" title="Colapsar todo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="7 11 12 6 17 11"></polyline>
+              <polyline points="7 18 12 13 17 18"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="column-content" id="table-view">
+        <div class="empty-state">Formatea el JSON para visualizarlo</div>
+      </div>
+    </div>
+
+    <div id="column-stats" class="column" style="display: none;">
+      <div class="column-header">
+        <span class="column-title">Estadísticas</span>
+      </div>
+      <div class="column-content">
+        <div id="json-stats" class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Objetos</div>
+            <div id="object-count" class="stat-value">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Arrays</div>
+            <div id="array-count" class="stat-value">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Strings</div>
+            <div id="string-count" class="stat-value">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Números</div>
+            <div id="number-count" class="stat-value">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Booleanos</div>
+            <div id="boolean-count" class="stat-value">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Nulos</div>
+            <div id="null-count" class="stat-value">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor de error global -->
+  <div id="error-overlay" class="error-overlay" style="display: none;">
+    <div id="error-message" class="error-message"></div>
+    <div class="error-close" id="error-close">✕</div>
+  </div>
+
+  <div id="examples-menu" class="context-menu" style="display: none;">
+    <div class="menu-item" data-example="simple">Ejemplo Simple</div>
+    <div class="menu-item" data-example="nested">Ejemplo Anidado</div>
+    <div class="menu-item" data-example="array">Ejemplo de Array</div>
+    <div class="menu-item" data-example="complex">Ejemplo Complejo</div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const jsonInput = document.getElementById('json-input');
+    const formatBtn = document.getElementById('format-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const examplesBtn = document.getElementById('examples-btn');
+    const examplesMenu = document.getElementById('examples-menu');
+    const errorOverlay = document.getElementById('error-overlay');
+    const errorMessage = document.getElementById('error-message');
+    const errorClose = document.getElementById('error-close');
+    const treeView = document.getElementById('tree-view');
+    const tableView = document.getElementById('table-view');
+    const expandAllTreeBtn = document.getElementById('expand-all-tree');
+    const collapseAllTreeBtn = document.getElementById('collapse-all-tree');
+    const expandAllTableBtn = document.getElementById('expand-all-table');
+    const collapseAllTableBtn = document.getElementById('collapse-all-table');
+    const jsonStats = document.getElementById('json-stats');
+    const objectCount = document.getElementById('object-count');
+    const arrayCount = document.getElementById('array-count');
+    const stringCount = document.getElementById('string-count');
+    const numberCount = document.getElementById('number-count');
+    const booleanCount = document.getElementById('boolean-count');
+    const nullCount = document.getElementById('null-count');
+
+    // Toggle elements
+    const toggleInputBtn = document.getElementById('toggle-input');
+    const toggleTreeBtn = document.getElementById('toggle-tree');
+    const toggleTableBtn = document.getElementById('toggle-table');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+
+    // Search elements
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const searchStats = document.getElementById('search-stats');
+    const searchCount = document.getElementById('search-count');
+    const prevResultBtn = document.getElementById('prev-result');
+    const nextResultBtn = document.getElementById('next-result');
+
+    // State
+    let parsedJson = null;
+    let showInput = true;
+    let showTree = false;
+    let showTable = false;
+    let searchResults = [];
+    let currentResultIndex = -1;
+
+    // Inicializa la apariencia de las columnas
+    function inicializarUI() {
+      // Obtener referencias correctas a las columnas
+      const inputColumn = document.getElementById('column-input');
+      const treeColumn = document.getElementById('column-tree');
+      const tableColumn = document.getElementById('column-table');
+      const statsColumn = document.getElementById('column-stats');
+
+      // Si no hay JSON, solo mostrar la columna de entrada
+      if (!parsedJson) {
+        inputColumn.style.display = 'flex';
+        inputColumn.style.width = '100%';
+        treeColumn.style.display = 'none';
+        tableColumn.style.display = 'none';
+        statsColumn.style.display = 'none';
+      } else {
+        // Si hay JSON, mostrar todas las columnas
+        inputColumn.style.display = showInput ? 'flex' : 'none';
+        treeColumn.style.display = showTree ? 'flex' : 'none';
+        tableColumn.style.display = showTable ? 'flex' : 'none';
+        statsColumn.style.display = 'flex';
+
+        // Calcular anchos
+        const visibleCount = [showInput, showTree, showTable, true].filter(Boolean).length;
+        const width = `${100 / visibleCount}%`;
+
+        if (showInput) inputColumn.style.width = width;
+        if (showTree) treeColumn.style.width = width;
+        if (showTable) tableColumn.style.width = width;
+        statsColumn.style.width = width;
+      }
+    }
+
+    // Theme management
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+
+      // Update theme toggle icons
+      if (theme === 'dark') {
+        themeToggleDarkIcon.style.display = 'none';
+        themeToggleLightIcon.style.display = 'block';
+      } else {
+        themeToggleDarkIcon.style.display = 'block';
+        themeToggleLightIcon.style.display = 'none';
+      }
+    }
+
+    // Check for saved theme preference or respect OS preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+    } else {
+      setTheme('light');
+    }
+
+    // Cargar JSON guardado y configurar estado inicial
+    const savedJson = localStorage.getItem('jsonData');
+    if (savedJson) {
+      jsonInput.value = savedJson;
+      try {
+        parsedJson = JSON.parse(savedJson);
+        showTree = true;
+        showTable = true;
+        updateViews();
+      } catch (err) {
+        // Si hay un error en el JSON guardado, limpiamos todo
+        jsonInput.value = '';
+        parsedJson = null;
+        localStorage.removeItem('jsonData');
+      }
+    } else {
+      // Si no hay JSON guardado, solo mostramos la columna de entrada
+      parsedJson = null;
+    }
+
+    // Inicializar la UI
+    inicializarUI();
+
+    // Event Listeners
+    formatBtn.addEventListener('click', formatJson);
+    clearBtn.addEventListener('click', clearAll);
+
+    // Toggle de columnas
+    toggleInputBtn.addEventListener('click', () => toggleColumn('input'));
+    toggleTreeBtn.addEventListener('click', () => toggleColumn('tree'));
+    toggleTableBtn.addEventListener('click', () => toggleColumn('table'));
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      setTheme(currentTheme === 'light' ? 'dark' : 'light');
+    });
+
+    // Toggle examples dropdown
+    examplesBtn.addEventListener('click', () => {
+      examplesMenu.style.display = examplesMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Close dropdown when clicking elsewhere
+    document.addEventListener('click', (e) => {
+      if (!examplesBtn.contains(e.target) && !examplesMenu.contains(e.target)) {
+        examplesMenu.style.display = 'none';
+      }
+    });
+
+    // Handle example selection
+    document.querySelectorAll('#examples-menu .menu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const example = e.target.getAttribute('data-example');
+        loadJsonExample(example);
+        examplesMenu.style.display = 'none';
+      });
+    });
+
+    // Save JSON data on change
+    jsonInput.addEventListener('input', () => {
+      localStorage.setItem('jsonData', jsonInput.value);
+    });
+
+    // Formatear al presionar Enter
+    jsonInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault();
+        formatJson();
+      }
+    });
+
+    // Auto-format JSON when pasting
+    jsonInput.addEventListener('paste', (e) => {
+      // Esperar un momento para que se complete el pegado
+      setTimeout(() => {
+        const pastedText = jsonInput.value.trim();
+        if (pastedText) {
+          console.log("Texto pegado detectado:", pastedText.substring(0, 50) + "...");
+          formatJson();
+        }
+      }, 10);
+    });
+
+    // Función auxiliar para verificar si un texto es JSON válido
+    function isValidJSON(text) {
+      try {
+        JSON.parse(text);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Expand/Collapse all tree nodes
+    expandAllTreeBtn.addEventListener('click', () => {
+      const toggleButtons = treeView.querySelectorAll('.tree-toggle');
+      toggleButtons.forEach(btn => {
+        const childrenContainer = btn.parentNode.nextElementSibling;
+        if (childrenContainer && childrenContainer.style.display === 'none') {
+          childrenContainer.style.display = 'block';
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          `;
+        }
+      });
+    });
+
+    collapseAllTreeBtn.addEventListener('click', () => {
+      const toggleButtons = treeView.querySelectorAll('.tree-toggle');
+      toggleButtons.forEach(btn => {
+        const childrenContainer = btn.parentNode.nextElementSibling;
+        if (childrenContainer && childrenContainer.style.display !== 'none') {
+          childrenContainer.style.display = 'none';
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          `;
+        }
+      });
+    });
+
+    // Expand/Collapse all table rows
+    expandAllTableBtn.addEventListener('click', () => {
+      const toggleButtons = tableView.querySelectorAll('.table-toggle');
+      toggleButtons.forEach(btn => {
+        const row = btn.closest('tr');
+        const nextRow = row.nextElementSibling;
+        if (nextRow && nextRow.style.display === 'none') {
+          nextRow.style.display = 'table-row';
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          `;
+        }
+      });
+    });
+
+    collapseAllTableBtn.addEventListener('click', () => {
+      const toggleButtons = tableView.querySelectorAll('.table-toggle');
+      toggleButtons.forEach(btn => {
+        const row = btn.closest('tr');
+        const nextRow = row.nextElementSibling;
+        if (nextRow && nextRow.style.display !== 'none') {
+          nextRow.style.display = 'none';
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          `;
+        }
+      });
+    });
+
+    // Search functionality
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        performSearch();
+      }
+    });
+
+    // Navigation between search results
+    prevResultBtn.addEventListener('click', () => {
+      if (currentResultIndex > 0) {
+        currentResultIndex--;
+        highlightResult(currentResultIndex);
+      }
+    });
+
+    nextResultBtn.addEventListener('click', () => {
+      if (currentResultIndex < searchResults.length - 1) {
+        currentResultIndex++;
+        highlightResult(currentResultIndex);
+      }
+    });
+
+    function performSearch() {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      if (!searchTerm || !parsedJson) return;
+
+      // Clear previous highlights
+      clearSearchHighlights();
+
+      // Find all matches in tree and table views
+      searchResults = [];
+
+      // Search in tree view
+      findMatchesInTree(treeView, searchTerm);
+
+      // Search in table view
+      findMatchesInTable(tableView, searchTerm);
+
+      // Update search stats
+      searchCount.textContent = searchResults.length;
+      searchStats.style.display = searchResults.length > 0 ? 'flex' : 'none';
+
+      // Highlight first result if any found
+      if (searchResults.length > 0) {
+        currentResultIndex = 0;
+        highlightResult(currentResultIndex);
+      }
+    }
+
+    function findMatchesInTree(container, searchTerm) {
+      const treeNodes = container.querySelectorAll('.tree-label');
+
+      treeNodes.forEach(node => {
+        const text = node.textContent.toLowerCase();
+
+        if (text.includes(searchTerm)) {
+          searchResults.push({
+            element: node,
+            type: 'tree'
+          });
+
+          // Highlight the matching text
+          highlightTextInNode(node, searchTerm);
+
+          // Expand all parent nodes to show the match
+          expandParents(node);
+        }
+      });
+    }
+
+    function findMatchesInTable(container, searchTerm) {
+      const tableCells = container.querySelectorAll('td');
+
+      tableCells.forEach(cell => {
+        const text = cell.textContent.toLowerCase();
+
+        if (text.includes(searchTerm)) {
+          searchResults.push({
+            element: cell,
+            type: 'table'
+          });
+
+          // Highlight the matching text
+          highlightTextInNode(cell, searchTerm);
+
+          // Expand parent row to show the match if it's in a nested table
+          const row = cell.closest('tr');
+          if (row.classList.contains('nested-row')) {
+            row.style.display = 'table-row';
+          }
+        }
+      });
+    }
+
+    function highlightTextInNode(node, searchTerm) {
+      const text = node.textContent;
+      const lowerText = text.toLowerCase();
+      const searchTermLower = searchTerm.toLowerCase();
+
+      let html = '';
+      let lastIndex = 0;
+
+      let index = lowerText.indexOf(searchTermLower);
+      while (index !== -1) {
+        // Add text before the match
+        html += text.substring(lastIndex, index);
+
+        // Add the highlighted match
+        html += `<span class="search-highlight">${text.substring(index, index + searchTerm.length)}</span>`;
+
+        lastIndex = index + searchTerm.length;
+        index = lowerText.indexOf(searchTermLower, lastIndex);
+      }
+
+      // Add any remaining text
+      html += text.substring(lastIndex);
+
+      node.innerHTML = html;
+    }
+
+    function expandParents(node) {
+      let current = node;
+
+      // Navigate up to find tree-children containers and expand them
+      while (current && current !== treeView) {
+        if (current.classList.contains('tree-children') && current.style.display === 'none') {
+          current.style.display = 'block';
+
+          // Update the toggle button
+          const parentContent = current.previousElementSibling;
+          if (parentContent && parentContent.classList.contains('tree-content')) {
+            const toggleBtn = parentContent.querySelector('.tree-toggle');
+            if (toggleBtn) {
+              toggleBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              `;
+            }
+          }
+        }
+
+        current = current.parentNode;
+      }
+    }
+
+    function clearSearchHighlights() {
+      // Clear highlights in tree view
+      const treeHighlights = treeView.querySelectorAll('.search-highlight');
+      treeHighlights.forEach(highlight => {
+        const parent = highlight.parentNode;
+        parent.textContent = parent.textContent; // Simple way to remove all HTML and keep just text
+      });
+
+      // Clear highlights in table view
+      const tableHighlights = tableView.querySelectorAll('.search-highlight');
+      tableHighlights.forEach(highlight => {
+        const parent = highlight.parentNode;
+        parent.textContent = parent.textContent;
+      });
+
+      searchResults = [];
+      currentResultIndex = -1;
+    }
+
+    function highlightResult(index) {
+      if (index < 0 || index >= searchResults.length) return;
+
+      const result = searchResults[index];
+      result.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Make sure the view container is visible
+      if (result.type === 'tree' && !showTree) {
+        showTree = true;
+        updateColumnVisibility();
+      } else if (result.type === 'table' && !showTable) {
+        showTable = true;
+        updateColumnVisibility();
+      }
+    }
+
+    // Functions
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorOverlay.style.display = 'block';
+    }
+
+    // Cerrar el error al hacer clic en la X
+    errorClose.addEventListener('click', () => {
+      errorOverlay.style.display = 'none';
+    });
+
+    // Cerrar el error con la tecla Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && errorOverlay.style.display !== 'none') {
+        errorOverlay.style.display = 'none';
+      }
+    });
+
+    // Función mejorada para mostrar errores JSON con posición
+    function showJsonError(errorMessage, jsonText) {
+      let errorDiv = document.createElement('div');
+
+      // Extractar la posición del error del mensaje (si existe)
+      const positionMatch = errorMessage.match(/position\s+(\d+)/i);
+      let errorPosition = positionMatch ? parseInt(positionMatch[1]) : -1;
+
+      // Crear título y mensaje de error
+      let errorTitle = document.createElement('div');
+      errorTitle.className = 'error-title';
+      errorTitle.textContent = 'Error de JSON inválido';
+
+      // Agregar posición si se encontró
+      if (errorPosition >= 0) {
+        // Obtener línea y columna aproximadas
+        let lines = jsonText.substring(0, errorPosition).split('\n');
+        let line = lines.length;
+        let column = lines[lines.length - 1].length + 1;
+
+        let positionInfo = document.createElement('div');
+        positionInfo.className = 'error-position';
+        positionInfo.textContent = `Error en línea ${line}, columna ${column}: ${errorMessage}`;
+        errorDiv.appendChild(positionInfo);
+
+        // Crear visualizador de error
+        let jsonViewer = document.createElement('div');
+        jsonViewer.className = 'json-error-viewer';
+
+        // Obtener contexto alrededor del error (máximo 3 líneas antes y después)
+        let allLines = jsonText.split('\n');
+        let startLine = Math.max(0, line - 4);
+        let endLine = Math.min(allLines.length - 1, line + 2);
+
+        for (let i = startLine; i <= endLine; i++) {
+          let lineDiv = document.createElement('div');
+          lineDiv.className = 'json-line';
+
+          // Añadir número de línea
+          let lineNumber = document.createElement('span');
+          lineNumber.className = 'line-number';
+          lineNumber.textContent = (i + 1) + ': ';
+          lineDiv.appendChild(lineNumber);
+
+          // Añadir contenido de la línea
+          let lineContent = document.createElement('span');
+          lineContent.textContent = allLines[i];
+
+          // Resaltar la línea con error
+          if (i === line - 1) {
+            lineDiv.classList.add('json-error-highlight');
+          }
+
+          lineDiv.appendChild(lineContent);
+          jsonViewer.appendChild(lineDiv);
+        }
+
+        errorDiv.appendChild(jsonViewer);
+      } else {
+        // Si no podemos determinar la posición, simplemente mostramos el mensaje
+        errorDiv.textContent = errorMessage;
+      }
+
+      // Establecer el contenido del mensaje de error
+      errorMessage.innerHTML = '';
+      errorMessage.appendChild(errorDiv);
+
+      // Mostrar el contenedor de error
+      errorOverlay.style.display = 'block';
+    }
+
+    function formatJson() {
+      const input = jsonInput.value.trim();
+      console.log("Formateando JSON, longitud:", input.length);
+      errorOverlay.style.display = 'none';
+
+      if (!input) {
+        treeView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+        tableView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+        parsedJson = null;
+        updateColumnVisibility();
+        return;
+      }
+
+      try {
+        // Intentar parsear el JSON
+        parsedJson = JSON.parse(input);
+        console.log("JSON parseado correctamente");
+
+        // Formatear el JSON con indentación
+        const formatted = JSON.stringify(parsedJson, null, 2);
+        jsonInput.value = formatted;
+
+        // Actualizar las vistas
+        renderTreeView(parsedJson);
+        renderTableView(parsedJson);
+
+        // Calcular estadísticas
+        calculateJsonStats(parsedJson);
+
+        // Activar las columnas por defecto después de analizar JSON
+        showTree = true;
+        showTable = true;
+
+        // Actualizar la visibilidad de las columnas
+        updateColumnVisibility();
+
+        // Guardar en localStorage
+        localStorage.setItem('jsonData', formatted);
+      } catch (err) {
+        console.error("Error al parsear JSON:", err.message);
+        showJsonError(err.message, input);
+
+        // Mantener las vistas limpias
+        treeView.innerHTML = '<div class="empty-state">Corrige el JSON para visualizarlo</div>';
+        tableView.innerHTML = '<div class="empty-state">Corrige el JSON para visualizarlo</div>';
+
+        // Marcar como JSON inválido
+        parsedJson = null;
+        updateColumnVisibility();
+      }
+    }
+
+    function clearAll() {
+      jsonInput.value = '';
+      errorOverlay.style.display = 'none';
+      parsedJson = null;
+      localStorage.removeItem('jsonData');
+      jsonStats.style.display = 'none';
+      treeView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+      tableView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+      updateColumnVisibility();
+    }
+
+    function toggleColumn(column) {
+      if (column === 'input') {
+        showInput = !showInput;
+      } else if (column === 'tree') {
+        showTree = !showTree;
+      } else if (column === 'table') {
+        showTable = !showTable;
+      }
+
+      updateColumnVisibility();
+    }
+
+    function updateColumnVisibility() {
+      // Simplemente usar nuestra nueva función de inicialización
+      inicializarUI();
+    }
+
+    function updateViews() {
+      if (parsedJson) {
+        renderTreeView(parsedJson);
+        renderTableView(parsedJson);
+        calculateJsonStats(parsedJson);
+      } else {
+        treeView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+        tableView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+        jsonStats.style.display = 'none';
+      }
+      updateColumnVisibility();
+    }
+
+    // Tree View Rendering
+    function renderTreeView(data) {
+      treeView.innerHTML = '';
+      const treeRoot = createTreeNode(data);
+      treeView.appendChild(treeRoot);
+    }
+
+    function createTreeNode(data, key, level = 0) {
+      const nodeContainer = document.createElement('div');
+      nodeContainer.className = 'tree-node';
+
+      const nodeContent = document.createElement('div');
+      nodeContent.className = 'tree-content';
+
+      const isObject = data !== null && typeof data === 'object';
+      const isArray = Array.isArray(data);
+
+      // Create toggle button for objects and arrays
+      const toggleBtn = document.createElement('div');
+      toggleBtn.className = 'tree-toggle';
+
+      if (isObject) {
+        toggleBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
+      } else {
+        toggleBtn.style.visibility = 'hidden';
+      }
+
+      nodeContent.appendChild(toggleBtn);
+
+      // Create label
+      const label = document.createElement('span');
+      label.className = 'tree-label';
+
+      if (key !== undefined) {
+        if (isObject) {
+          const count = isArray ? data.length : Object.keys(data).length;
+          label.textContent = `${key}: ${isArray ? '[' : '{'} ${count} ${count === 1 ? 'item' : 'items'} ${isArray ? ']' : '}'}`;
+        } else {
+          label.textContent = `${key}: `;
+
+          // Add value with appropriate styling
+          const value = document.createElement('span');
+          if (data === null) {
+            value.className = 'null-value';
+            value.textContent = 'null';
+          } else if (typeof data === 'string') {
+            value.className = 'string-value';
+            value.textContent = `"${data}"`;
+          } else if (typeof data === 'number') {
+            value.className = 'number-value';
+            value.textContent = data;
+          } else if (typeof data === 'boolean') {
+            value.className = 'boolean-value';
+            value.textContent = data;
+          } else {
+            value.textContent = data;
+          }
+          label.appendChild(value);
+        }
+      } else {
+        if (isArray) {
+          label.textContent = `Array [${data.length}]`;
+        } else if (isObject) {
+          label.textContent = `Object {${Object.keys(data).length}}`;
+        } else {
+          label.textContent = String(data);
+        }
+      }
+
+      nodeContent.appendChild(label);
+      nodeContainer.appendChild(nodeContent);
+
+      // Create children container for objects and arrays
+      if (isObject) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'tree-children';
+
+        if (isArray) {
+          data.forEach((item, index) => {
+            const childNode = createTreeNode(item, String(index), level + 1);
+            childrenContainer.appendChild(childNode);
+          });
+        } else {
+          Object.entries(data).forEach(([childKey, value]) => {
+            const childNode = createTreeNode(value, childKey, level + 1);
+            childrenContainer.appendChild(childNode);
+          });
+        }
+
+        nodeContainer.appendChild(childrenContainer);
+
+        // Toggle functionality
+        toggleBtn.addEventListener('click', () => {
+          const isExpanded = childrenContainer.style.display !== 'none';
+          childrenContainer.style.display = isExpanded ? 'none' : 'block';
+          toggleBtn.innerHTML = isExpanded
+            ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`
+            : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+        });
+
+        // Auto-collapse deeper levels
+        if (level >= 2) {
+          childrenContainer.style.display = 'none';
+          toggleBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          `;
+        }
+      }
+
+      return nodeContainer;
+    }
+
+    // Table View Rendering
+    function renderTableView(data) {
+      tableView.innerHTML = '';
+
+      if (Array.isArray(data)) {
+        tableView.appendChild(createArrayTable(data));
+      } else if (typeof data === 'object' && data !== null) {
+        tableView.appendChild(createObjectTable(data));
+      } else {
+        tableView.textContent = String(data);
+      }
+    }
+
+    function createObjectTable(data, level = 0) {
+      const table = document.createElement('table');
+
+      // Create header
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const keyHeader = document.createElement('th');
+      keyHeader.textContent = 'Key';
+      keyHeader.style.width = '30%';
+      const valueHeader = document.createElement('th');
+      valueHeader.textContent = 'Value';
+
+      headerRow.appendChild(keyHeader);
+      headerRow.appendChild(valueHeader);
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Create body
+      const tbody = document.createElement('tbody');
+
+      Object.entries(data).forEach(([key, value]) => {
+        const isComplex = value !== null && typeof value === 'object';
+
+        // Create main row
+        const row = document.createElement('tr');
+        const keyCell = document.createElement('td');
+        const valueCell = document.createElement('td');
+
+        // Key cell with toggle for complex values
+        if (isComplex) {
+          const toggleBtn = document.createElement('span');
+          toggleBtn.className = 'table-toggle';
+          toggleBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          `;
+          keyCell.appendChild(toggleBtn);
+        }
+
+        const keyText = document.createTextNode(key);
+        keyCell.appendChild(keyText);
+        row.appendChild(keyCell);
+
+        // Value cell
+        if (!isComplex) {
+          if (value === null) {
+            valueCell.innerHTML = '<span class="null-value">null</span>';
+          } else if (typeof value === 'string') {
+            valueCell.innerHTML = `<span class="string-value">"${value}"</span>`;
+          } else if (typeof value === 'number') {
+            valueCell.innerHTML = `<span class="number-value">${value}</span>`;
+          } else if (typeof value === 'boolean') {
+            valueCell.innerHTML = `<span class="boolean-value">${value}</span>`;
+          } else {
+            valueCell.textContent = String(value);
+          }
+        } else {
+          const count = Array.isArray(value) ? value.length : Object.keys(value).length;
+          valueCell.innerHTML = `<span class="muted">${Array.isArray(value) ? 'Array' : 'Object'} (${count} ${count === 1 ? 'item' : 'items'})</span>`;
+        }
+
+        row.appendChild(valueCell);
+        tbody.appendChild(row);
+
+        // Create nested table row for complex values
+        if (isComplex) {
+          const nestedRow = document.createElement('tr');
+          nestedRow.style.display = 'none';
+
+          const nestedCell = document.createElement('td');
+          nestedCell.colSpan = 2;
+          nestedCell.className = 'nested-table';
+
+          const nestedTable = Array.isArray(value)
+            ? createArrayTable(value, level + 1)
+            : createObjectTable(value, level + 1);
+
+          nestedCell.appendChild(nestedTable);
+          nestedRow.appendChild(nestedCell);
+          tbody.appendChild(nestedRow);
+
+          // Toggle functionality
+          const toggleBtn = keyCell.querySelector('.table-toggle');
+          toggleBtn.addEventListener('click', () => {
+            const isExpanded = nestedRow.style.display !== 'none';
+            nestedRow.style.display = isExpanded ? 'none' : 'table-row';
+            toggleBtn.innerHTML = isExpanded
+              ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`
+              : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+          });
+        }
+      });
+
+      table.appendChild(tbody);
+      return table;
+    }
+
+    function createArrayTable(data, level = 0) {
+      const table = document.createElement('table');
+
+      // Create header
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const indexHeader = document.createElement('th');
+      indexHeader.textContent = 'Index';
+      indexHeader.style.width = '30%';
+      const valueHeader = document.createElement('th');
+      valueHeader.textContent = 'Value';
+
+      headerRow.appendChild(indexHeader);
+      headerRow.appendChild(valueHeader);
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Create body
+      const tbody = document.createElement('tbody');
+
+      data.forEach((value, index) => {
+        const isComplex = value !== null && typeof value === 'object';
+
+        // Create main row
+        const row = document.createElement('tr');
+        const indexCell = document.createElement('td');
+        const valueCell = document.createElement('td');
+
+        // Index cell with toggle for complex values
+        if (isComplex) {
+          const toggleBtn = document.createElement('span');
+          toggleBtn.className = 'table-toggle';
+          toggleBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          `;
+          indexCell.appendChild(toggleBtn);
+        }
+
+        const indexText = document.createTextNode(index);
+        indexCell.appendChild(indexText);
+        row.appendChild(indexCell);
+
+        // Value cell
+        if (!isComplex) {
+          if (value === null) {
+            valueCell.innerHTML = '<span class="null-value">null</span>';
+          } else if (typeof value === 'string') {
+            valueCell.innerHTML = `<span class="string-value">"${value}"</span>`;
+          } else if (typeof value === 'number') {
+            valueCell.innerHTML = `<span class="number-value">${value}</span>`;
+          } else if (typeof value === 'boolean') {
+            valueCell.innerHTML = `<span class="boolean-value">${value}</span>`;
+          } else {
+            valueCell.textContent = String(value);
+          }
+        } else {
+          const count = Array.isArray(value) ? value.length : Object.keys(value).length;
+          valueCell.innerHTML = `<span class="muted">${Array.isArray(value) ? 'Array' : 'Object'} (${count} ${count === 1 ? 'item' : 'items'})</span>`;
+        }
+
+        row.appendChild(valueCell);
+        tbody.appendChild(row);
+
+        // Create nested table row for complex values
+        if (isComplex) {
+          const nestedRow = document.createElement('tr');
+          nestedRow.style.display = 'none';
+
+          const nestedCell = document.createElement('td');
+          nestedCell.colSpan = 2;
+          nestedCell.className = 'nested-table';
+
+          const nestedTable = Array.isArray(value)
+            ? createArrayTable(value, level + 1)
+            : createObjectTable(value, level + 1);
+
+          nestedCell.appendChild(nestedTable);
+          nestedRow.appendChild(nestedCell);
+          tbody.appendChild(nestedRow);
+
+          // Toggle functionality
+          const toggleBtn = indexCell.querySelector('.table-toggle');
+          toggleBtn.addEventListener('click', () => {
+            const isExpanded = nestedRow.style.display !== 'none';
+            nestedRow.style.display = isExpanded ? 'none' : 'table-row';
+            toggleBtn.innerHTML = isExpanded
+              ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`
+              : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+          });
+        }
+      });
+
+      table.appendChild(tbody);
+      return table;
+    }
+
+    // JSON Examples
+    function loadJsonExample(example) {
+      let json = '';
+
+      switch (example) {
+        case 'simple':
+          json = `{
+  "name": "John Doe",
+  "age": 30,
+  "email": "john@example.com",
+  "isSubscribed": true,
+  "interests": ["programming", "design", "hiking"]
+}`;
+          break;
+        case 'nested':
+          json = `{
+  "person": {
+    "name": "Maria García",
+    "contact": {
+      "email": "maria@example.com",
+      "phone": "+34 600 123 456",
+      "address": {
+        "street": "Calle Mayor 10",
+        "city": "Madrid",
+        "country": "Spain",
+        "postalCode": "28001"
+      }
+    },
+    "profession": "Software Developer"
+  },
+  "company": {
+    "name": "Tech Solutions SL",
+    "founded": 2010,
+    "active": true
+  }
+}`;
+          break;
+        case 'array':
+          json = `[
+  {
+    "id": 1,
+    "task": "Complete project proposal",
+    "completed": true,
+    "priority": "high",
+    "dueDate": "2023-06-15"
+  },
+  {
+    "id": 2,
+    "task": "Review code changes",
+    "completed": false,
+    "priority": "medium",
+    "dueDate": "2023-06-20"
+  },
+  {
+    "id": 3,
+    "task": "Update documentation",
+    "completed": false,
+    "priority": "low",
+    "dueDate": "2023-06-25"
+  },
+  {
+    "id": 4,
+    "task": "Test new features",
+    "completed": false,
+    "priority": "high",
+    "dueDate": "2023-06-30"
+  }
+]`;
+          break;
+        case 'complex':
+          json = `{
+  "apiVersion": "2.0",
+  "data": {
+    "users": [
+      {
+        "id": "u123",
+        "name": "Ana Martínez",
+        "role": "admin",
+        "active": true,
+        "metadata": {
+          "lastLogin": "2023-06-01T14:30:45Z",
+          "createdAt": "2022-01-15T09:20:10Z"
+        },
+        "permissions": ["read", "write", "delete", "manage"],
+        "settings": {
+          "notifications": {
+            "email": true,
+            "sms": false,
+            "push": true
+          },
+          "theme": "dark"
+        }
+      },
+      {
+        "id": "u456",
+        "name": "Carlos Rodríguez",
+        "role": "editor",
+        "active": true,
+        "metadata": {
+          "lastLogin": "2023-06-02T10:15:32Z",
+          "createdAt": "2022-03-20T11:45:30Z"
+        },
+        "permissions": ["read", "write"],
+        "settings": {
+          "notifications": {
+            "email": true,
+            "sms": true,
+            "push": false
+          },
+          "theme": "light"
+        }
+      }
+    ],
+    "stats": {
+      "totalUsers": 2,
+      "activeUsers": 2,
+      "averageSessionTime": 45.5,
+      "topFeatures": ["dashboard", "reports", "analytics"],
+      "usageByDevice": {
+        "mobile": 0.35,
+        "tablet": 0.15,
+        "desktop": 0.5
+      }
+    },
+    "system": {
+      "version": "1.5.2",
+      "lastUpdate": "2023-05-28T00:00:00Z",
+      "status": "operational",
+      "maintenance": {
+        "scheduled": true,
+        "date": "2023-06-10T02:00:00Z",
+        "duration": 120
+      }
+    }
+  },
+  "success": true,
+  "processingTime": 0.023
+}`;
+          break;
+      }
+
+      jsonInput.value = json;
+      formatJson();
+    }
+
+    // Calculate JSON statistics
+    function calculateJsonStats(data) {
+      // Reset counters
+      let counts = {
+        object: 0,
+        array: 0,
+        string: 0,
+        number: 0,
+        boolean: 0,
+        null: 0
+      };
+
+      // Count recursively
+      countTypes(data, counts);
+
+      // Update DOM
+      objectCount.textContent = counts.object;
+      arrayCount.textContent = counts.array;
+      stringCount.textContent = counts.string;
+      numberCount.textContent = counts.number;
+      booleanCount.textContent = counts.boolean;
+      nullCount.textContent = counts.null;
+
+      // Show stats
+      jsonStats.style.display = 'grid';
+    }
+
+    function countTypes(data, counts) {
+      if (data === null) {
+        counts.null++;
+      }
+      else if (Array.isArray(data)) {
+        counts.array++;
+        data.forEach(item => countTypes(item, counts));
+      }
+      else if (typeof data === 'object') {
+        counts.object++;
+        Object.values(data).forEach(value => countTypes(value, counts));
+      }
+      else if (typeof data === 'string') {
+        counts.string++;
+      }
+      else if (typeof data === 'number') {
+        counts.number++;
+      }
+      else if (typeof data === 'boolean') {
+        counts.boolean++;
+      }
+    }
+  </script>
+</body>
+
+</html>
