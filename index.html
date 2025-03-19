@@ -261,61 +261,67 @@
       border-radius: 2px;
     }
 
-    /* Error overlay */
-    .error-overlay {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-      background-color: var(--color-error-bg);
-      color: var(--color-error-text);
-      border-radius: 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      padding: 16px;
-      z-index: 1000;
-      animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(100px);
-        opacity: 0;
-      }
-
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
+    /* Error message */
     .error-message {
-      margin-right: 20px;
+      margin-top: 16px;
+      padding: 12px;
+      background-color: var(--color-error-bg);
+      border-radius: 4px;
+      color: var(--color-error-text);
       width: 100%;
       max-width: 100%;
       overflow: hidden;
     }
 
-    .error-close {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 24px;
-      height: 24px;
+    .error-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .error-position {
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+
+    .json-error-viewer {
+      font-family: 'Courier New', Courier, monospace;
+      white-space: pre;
+      overflow-x: auto;
+      background-color: rgba(0, 0, 0, 0.05);
+      padding: 8px;
+      border-radius: 4px;
+      line-height: 1.5;
+      font-size: 0.875rem;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 100%;
+    }
+
+    .line-number {
+      display: inline-block;
+      width: 30px;
+      color: var(--color-text-secondary);
+      user-select: none;
+      opacity: 0.7;
+    }
+
+    .json-line {
+      white-space: pre;
+    }
+
+    .json-error-highlight {
+      background-color: rgba(220, 38, 38, 0.3);
+      border-radius: 2px;
+      padding: 2px 0;
+    }
+
+    /* Empty state */
+    .empty-state {
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      border-radius: 50%;
-      background-color: rgba(0, 0, 0, 0.1);
-      color: var(--color-error-text);
-      font-size: 14px;
-      transition: background-color 0.2s;
-    }
-
-    .error-close:hover {
-      background-color: rgba(0, 0, 0, 0.2);
+      height: 100%;
+      color: var(--color-muted);
     }
 
     /* Theme toggle */
@@ -411,30 +417,6 @@
       color: var(--color-text-secondary);
       margin-right: 8px;
     }
-
-    /* Context Menu */
-    .context-menu {
-      position: absolute;
-      z-index: 1000;
-      background-color: var(--color-bg-primary);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      min-width: 180px;
-      right: 16px;
-      top: 125px;
-    }
-
-    .menu-item {
-      padding: 10px 16px;
-      cursor: pointer;
-      color: var(--color-text-primary);
-      font-size: 0.875rem;
-    }
-
-    .menu-item:hover {
-      background-color: var(--color-hover);
-    }
   </style>
 </head>
 
@@ -517,139 +499,62 @@
   </header>
 
   <!-- Main content with columns -->
-  <div id="main-content" class="main-content">
-    <div id="column-input" class="column" style="width: 100%;">
+  <div class="main-content" id="main-content">
+    <!-- Input Column -->
+    <div class="column" id="input-column">
       <div class="column-header">
-        <span class="column-title">JSON Input</span>
+        <div class="column-title">JSON Input</div>
         <div class="btn-group">
-          <button id="format-btn" title="Formatear JSON">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10H3"></path>
-              <path d="M21 6H3"></path>
-              <path d="M21 14H3"></path>
-              <path d="M21 18H3"></path>
-            </svg>
-          </button>
-          <button id="clear-btn" title="Limpiar">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18"></path>
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            </svg>
-          </button>
-          <button id="examples-btn" title="Ejemplos">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-          </button>
+          <button id="format-btn">Format</button>
+          <button id="clear-btn">Clear</button>
+          <button id="examples-btn">Examples</button>
         </div>
       </div>
       <div class="column-content">
-        <textarea id="json-input" placeholder="Pega tu JSON aquí o carga un ejemplo del menú"></textarea>
+        <textarea id="json-input" placeholder="Paste your JSON here..."></textarea>
+        <div id="examples-dropdown" class="dropdown" style="display: none;">
+          <div class="dropdown-content">
+            <a href="#" data-example="simple">Simple Object</a>
+            <a href="#" data-example="nested">Nested Objects</a>
+            <a href="#" data-example="array">Array Example</a>
+            <a href="#" data-example="complex">Complex Structure</a>
+          </div>
+        </div>
+        <div id="error-container"></div>
+        <div id="json-stats" class="json-stats" style="display: none;">
+          <div><span class="stat-label">Objetos:</span> <span id="object-count">0</span></div>
+          <div><span class="stat-label">Arrays:</span> <span id="array-count">0</span></div>
+          <div><span class="stat-label">Strings:</span> <span id="string-count">0</span></div>
+          <div><span class="stat-label">Números:</span> <span id="number-count">0</span></div>
+          <div><span class="stat-label">Booleanos:</span> <span id="boolean-count">0</span></div>
+          <div><span class="stat-label">Nulos:</span> <span id="null-count">0</span></div>
+        </div>
       </div>
     </div>
 
-    <div id="column-tree" class="column" style="display: none;">
+    <!-- Tree View Column -->
+    <div class="column" id="tree-column" style="display: none;">
       <div class="column-header">
-        <span class="column-title">Visualización de Árbol</span>
+        <div class="column-title">Tree View</div>
         <div class="btn-group">
-          <button id="expand-all-tree" title="Expandir todo">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="7 13 12 18 17 13"></polyline>
-              <polyline points="7 6 12 11 17 6"></polyline>
-            </svg>
-          </button>
-          <button id="collapse-all-tree" title="Colapsar todo">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="7 11 12 6 17 11"></polyline>
-              <polyline points="7 18 12 13 17 18"></polyline>
-            </svg>
-          </button>
+          <button id="expand-all-tree">Expand All</button>
+          <button id="collapse-all-tree">Collapse all</button>
         </div>
       </div>
-      <div class="column-content" id="tree-view">
-        <div class="empty-state">Formatea el JSON para visualizarlo</div>
-      </div>
+      <div class="column-content" id="tree-container"></div>
     </div>
 
-    <div id="column-table" class="column" style="display: none;">
+    <!-- Table View Column -->
+    <div class="column" id="table-column" style="display: none;">
       <div class="column-header">
-        <span class="column-title">Visualización de Tabla</span>
+        <div class="column-title">Table View</div>
         <div class="btn-group">
-          <button id="expand-all-table" title="Expandir todo">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="7 13 12 18 17 13"></polyline>
-              <polyline points="7 6 12 11 17 6"></polyline>
-            </svg>
-          </button>
-          <button id="collapse-all-table" title="Colapsar todo">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="7 11 12 6 17 11"></polyline>
-              <polyline points="7 18 12 13 17 18"></polyline>
-            </svg>
-          </button>
+          <button id="expand-all-table">Expand All</button>
+          <button id="collapse-all-table">Collapse All</button>
         </div>
       </div>
-      <div class="column-content" id="table-view">
-        <div class="empty-state">Formatea el JSON para visualizarlo</div>
-      </div>
+      <div class="column-content" id="table-container"></div>
     </div>
-
-    <div id="column-stats" class="column" style="display: none;">
-      <div class="column-header">
-        <span class="column-title">Estadísticas</span>
-      </div>
-      <div class="column-content">
-        <div id="json-stats" class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-label">Objetos</div>
-            <div id="object-count" class="stat-value">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Arrays</div>
-            <div id="array-count" class="stat-value">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Strings</div>
-            <div id="string-count" class="stat-value">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Números</div>
-            <div id="number-count" class="stat-value">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Booleanos</div>
-            <div id="boolean-count" class="stat-value">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Nulos</div>
-            <div id="null-count" class="stat-value">0</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Contenedor de error global -->
-  <div id="error-overlay" class="error-overlay" style="display: none;">
-    <div id="error-message" class="error-message"></div>
-    <div class="error-close" id="error-close">✕</div>
-  </div>
-
-  <div id="examples-menu" class="context-menu" style="display: none;">
-    <div class="menu-item" data-example="simple">Ejemplo Simple</div>
-    <div class="menu-item" data-example="nested">Ejemplo Anidado</div>
-    <div class="menu-item" data-example="array">Ejemplo de Array</div>
-    <div class="menu-item" data-example="complex">Ejemplo Complejo</div>
   </div>
 
   <script>
@@ -658,16 +563,30 @@
     const formatBtn = document.getElementById('format-btn');
     const clearBtn = document.getElementById('clear-btn');
     const examplesBtn = document.getElementById('examples-btn');
-    const examplesMenu = document.getElementById('examples-menu');
-    const errorOverlay = document.getElementById('error-overlay');
-    const errorMessage = document.getElementById('error-message');
-    const errorClose = document.getElementById('error-close');
-    const treeView = document.getElementById('tree-view');
-    const tableView = document.getElementById('table-view');
+    const examplesDropdown = document.getElementById('examples-dropdown');
+    const errorContainer = document.getElementById('error-container');
+    const treeContainer = document.getElementById('tree-container');
+    const tableContainer = document.getElementById('table-container');
+    const inputColumn = document.getElementById('input-column');
+    const treeColumn = document.getElementById('tree-column');
+    const tableColumn = document.getElementById('table-column');
+    const mainContent = document.getElementById('main-content');
+    const toggleInputBtn = document.getElementById('toggle-input');
+    const toggleTreeBtn = document.getElementById('toggle-tree');
+    const toggleTableBtn = document.getElementById('toggle-table');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
     const expandAllTreeBtn = document.getElementById('expand-all-tree');
     const collapseAllTreeBtn = document.getElementById('collapse-all-tree');
     const expandAllTableBtn = document.getElementById('expand-all-table');
     const collapseAllTableBtn = document.getElementById('collapse-all-table');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const searchStats = document.getElementById('search-stats');
+    const searchCount = document.getElementById('search-count');
+    const prevResultBtn = document.getElementById('prev-result');
+    const nextResultBtn = document.getElementById('next-result');
     const jsonStats = document.getElementById('json-stats');
     const objectCount = document.getElementById('object-count');
     const arrayCount = document.getElementById('array-count');
@@ -676,22 +595,6 @@
     const booleanCount = document.getElementById('boolean-count');
     const nullCount = document.getElementById('null-count');
 
-    // Toggle elements
-    const toggleInputBtn = document.getElementById('toggle-input');
-    const toggleTreeBtn = document.getElementById('toggle-tree');
-    const toggleTableBtn = document.getElementById('toggle-table');
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-
-    // Search elements
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-btn');
-    const searchStats = document.getElementById('search-stats');
-    const searchCount = document.getElementById('search-count');
-    const prevResultBtn = document.getElementById('prev-result');
-    const nextResultBtn = document.getElementById('next-result');
-
     // State
     let parsedJson = null;
     let showInput = true;
@@ -699,39 +602,6 @@
     let showTable = false;
     let searchResults = [];
     let currentResultIndex = -1;
-
-    // Inicializa la apariencia de las columnas
-    function inicializarUI() {
-      // Obtener referencias correctas a las columnas
-      const inputColumn = document.getElementById('column-input');
-      const treeColumn = document.getElementById('column-tree');
-      const tableColumn = document.getElementById('column-table');
-      const statsColumn = document.getElementById('column-stats');
-
-      // Si no hay JSON, solo mostrar la columna de entrada
-      if (!parsedJson) {
-        inputColumn.style.display = 'flex';
-        inputColumn.style.width = '100%';
-        treeColumn.style.display = 'none';
-        tableColumn.style.display = 'none';
-        statsColumn.style.display = 'none';
-      } else {
-        // Si hay JSON, mostrar todas las columnas
-        inputColumn.style.display = showInput ? 'flex' : 'none';
-        treeColumn.style.display = showTree ? 'flex' : 'none';
-        tableColumn.style.display = showTable ? 'flex' : 'none';
-        statsColumn.style.display = 'flex';
-
-        // Calcular anchos
-        const visibleCount = [showInput, showTree, showTable, true].filter(Boolean).length;
-        const width = `${100 / visibleCount}%`;
-
-        if (showInput) inputColumn.style.width = width;
-        if (showTree) treeColumn.style.width = width;
-        if (showTable) tableColumn.style.width = width;
-        statsColumn.style.width = width;
-      }
-    }
 
     // Theme management
     function setTheme(theme) {
@@ -758,34 +628,21 @@
       setTheme('light');
     }
 
-    // Cargar JSON guardado y configurar estado inicial
+    // Cargar JSON guardado
     const savedJson = localStorage.getItem('jsonData');
     if (savedJson) {
       jsonInput.value = savedJson;
       try {
         parsedJson = JSON.parse(savedJson);
-        showTree = true;
-        showTable = true;
         updateViews();
       } catch (err) {
-        // Si hay un error en el JSON guardado, limpiamos todo
-        jsonInput.value = '';
-        parsedJson = null;
-        localStorage.removeItem('jsonData');
+        // Ignorar si hay error en el JSON guardado
       }
-    } else {
-      // Si no hay JSON guardado, solo mostramos la columna de entrada
-      parsedJson = null;
     }
-
-    // Inicializar la UI
-    inicializarUI();
 
     // Event Listeners
     formatBtn.addEventListener('click', formatJson);
     clearBtn.addEventListener('click', clearAll);
-
-    // Toggle de columnas
     toggleInputBtn.addEventListener('click', () => toggleColumn('input'));
     toggleTreeBtn.addEventListener('click', () => toggleColumn('tree'));
     toggleTableBtn.addEventListener('click', () => toggleColumn('table'));
@@ -796,22 +653,23 @@
 
     // Toggle examples dropdown
     examplesBtn.addEventListener('click', () => {
-      examplesMenu.style.display = examplesMenu.style.display === 'none' ? 'block' : 'none';
+      examplesDropdown.style.display = examplesDropdown.style.display === 'none' ? 'block' : 'none';
     });
 
     // Close dropdown when clicking elsewhere
     document.addEventListener('click', (e) => {
-      if (!examplesBtn.contains(e.target) && !examplesMenu.contains(e.target)) {
-        examplesMenu.style.display = 'none';
+      if (!examplesBtn.contains(e.target) && !examplesDropdown.contains(e.target)) {
+        examplesDropdown.style.display = 'none';
       }
     });
 
     // Handle example selection
-    document.querySelectorAll('#examples-menu .menu-item').forEach(item => {
-      item.addEventListener('click', (e) => {
+    document.querySelectorAll('#examples-dropdown a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
         const example = e.target.getAttribute('data-example');
         loadJsonExample(example);
-        examplesMenu.style.display = 'none';
+        examplesDropdown.style.display = 'none';
       });
     });
 
@@ -820,24 +678,20 @@
       localStorage.setItem('jsonData', jsonInput.value);
     });
 
-    // Formatear al presionar Enter
-    jsonInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && e.ctrlKey) {
-        e.preventDefault();
-        formatJson();
-      }
-    });
-
     // Auto-format JSON when pasting
     jsonInput.addEventListener('paste', (e) => {
-      // Esperar un momento para que se complete el pegado
+      // Uso setTimeout para dejar que primero se complete el evento paste
       setTimeout(() => {
         const pastedText = jsonInput.value.trim();
         if (pastedText) {
-          console.log("Texto pegado detectado:", pastedText.substring(0, 50) + "...");
-          formatJson();
+          try {
+            JSON.parse(pastedText);
+            formatJson();
+          } catch (err) {
+            showJsonError(`${err.message}`, pastedText);
+          }
         }
-      }, 10);
+      }, 0);
     });
 
     // Función auxiliar para verificar si un texto es JSON válido
@@ -852,7 +706,7 @@
 
     // Expand/Collapse all tree nodes
     expandAllTreeBtn.addEventListener('click', () => {
-      const toggleButtons = treeView.querySelectorAll('.tree-toggle');
+      const toggleButtons = treeContainer.querySelectorAll('.tree-toggle');
       toggleButtons.forEach(btn => {
         const childrenContainer = btn.parentNode.nextElementSibling;
         if (childrenContainer && childrenContainer.style.display === 'none') {
@@ -867,7 +721,7 @@
     });
 
     collapseAllTreeBtn.addEventListener('click', () => {
-      const toggleButtons = treeView.querySelectorAll('.tree-toggle');
+      const toggleButtons = treeContainer.querySelectorAll('.tree-toggle');
       toggleButtons.forEach(btn => {
         const childrenContainer = btn.parentNode.nextElementSibling;
         if (childrenContainer && childrenContainer.style.display !== 'none') {
@@ -883,7 +737,7 @@
 
     // Expand/Collapse all table rows
     expandAllTableBtn.addEventListener('click', () => {
-      const toggleButtons = tableView.querySelectorAll('.table-toggle');
+      const toggleButtons = tableContainer.querySelectorAll('.table-toggle');
       toggleButtons.forEach(btn => {
         const row = btn.closest('tr');
         const nextRow = row.nextElementSibling;
@@ -899,7 +753,7 @@
     });
 
     collapseAllTableBtn.addEventListener('click', () => {
-      const toggleButtons = tableView.querySelectorAll('.table-toggle');
+      const toggleButtons = tableContainer.querySelectorAll('.table-toggle');
       toggleButtons.forEach(btn => {
         const row = btn.closest('tr');
         const nextRow = row.nextElementSibling;
@@ -948,10 +802,10 @@
       searchResults = [];
 
       // Search in tree view
-      findMatchesInTree(treeView, searchTerm);
+      findMatchesInTree(treeContainer, searchTerm);
 
       // Search in table view
-      findMatchesInTable(tableView, searchTerm);
+      findMatchesInTable(tableContainer, searchTerm);
 
       // Update search stats
       searchCount.textContent = searchResults.length;
@@ -1039,7 +893,7 @@
       let current = node;
 
       // Navigate up to find tree-children containers and expand them
-      while (current && current !== treeView) {
+      while (current && current !== treeContainer) {
         if (current.classList.contains('tree-children') && current.style.display === 'none') {
           current.style.display = 'block';
 
@@ -1063,14 +917,14 @@
 
     function clearSearchHighlights() {
       // Clear highlights in tree view
-      const treeHighlights = treeView.querySelectorAll('.search-highlight');
+      const treeHighlights = treeContainer.querySelectorAll('.search-highlight');
       treeHighlights.forEach(highlight => {
         const parent = highlight.parentNode;
         parent.textContent = parent.textContent; // Simple way to remove all HTML and keep just text
       });
 
       // Clear highlights in table view
-      const tableHighlights = tableView.querySelectorAll('.search-highlight');
+      const tableHighlights = tableContainer.querySelectorAll('.search-highlight');
       tableHighlights.forEach(highlight => {
         const parent = highlight.parentNode;
         parent.textContent = parent.textContent;
@@ -1098,154 +952,132 @@
 
     // Functions
     function showError(message) {
-      errorMessage.textContent = message;
-      errorOverlay.style.display = 'block';
+      errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
     }
-
-    // Cerrar el error al hacer clic en la X
-    errorClose.addEventListener('click', () => {
-      errorOverlay.style.display = 'none';
-    });
-
-    // Cerrar el error con la tecla Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && errorOverlay.style.display !== 'none') {
-        errorOverlay.style.display = 'none';
-      }
-    });
 
     // Función mejorada para mostrar errores JSON con posición
     function showJsonError(errorMessage, jsonText) {
-      let errorDiv = document.createElement('div');
+      // Limpiar cualquier error anterior
+      errorContainer.innerHTML = '';
 
-      // Extractar la posición del error del mensaje (si existe)
-      const positionMatch = errorMessage.match(/position\s+(\d+)/i);
+      // Extraer la posición del error del mensaje (si existe)
+      const positionMatch = errorMessage.match(/position (\d+)/i);
       let errorPosition = positionMatch ? parseInt(positionMatch[1]) : -1;
 
-      // Crear título y mensaje de error
-      let errorTitle = document.createElement('div');
+      // Crear el contenedor principal del error
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+
+      // Añadir título del error
+      const errorTitle = document.createElement('div');
       errorTitle.className = 'error-title';
-      errorTitle.textContent = 'Error de JSON inválido';
+      errorTitle.textContent = `Error de JSON: ${errorMessage}`;
+      errorDiv.appendChild(errorTitle);
 
-      // Agregar posición si se encontró
+      // Si encontramos una posición válida
       if (errorPosition >= 0) {
-        // Obtener línea y columna aproximadas
-        let lines = jsonText.substring(0, errorPosition).split('\n');
-        let line = lines.length;
-        let column = lines[lines.length - 1].length + 1;
+        // Añadir información de posición
+        const errorPos = document.createElement('div');
+        errorPos.className = 'error-position';
+        errorPos.textContent = `Error en la posición ${errorPosition}`;
+        errorDiv.appendChild(errorPos);
 
-        let positionInfo = document.createElement('div');
-        positionInfo.className = 'error-position';
-        positionInfo.textContent = `Error en línea ${line}, columna ${column}: ${errorMessage}`;
-        errorDiv.appendChild(positionInfo);
+        // Calcular la línea y columna aproximada del error
+        let line = 1;
+        let column = 0;
+        let isErrorHighlighted = false;
 
-        // Crear visualizador de error
-        let jsonViewer = document.createElement('div');
-        jsonViewer.className = 'json-error-viewer';
+        // Formatear el JSON con numeración de líneas y resaltado de error
+        const viewerDiv = document.createElement('div');
+        viewerDiv.className = 'json-error-viewer';
 
-        // Obtener contexto alrededor del error (máximo 3 líneas antes y después)
-        let allLines = jsonText.split('\n');
-        let startLine = Math.max(0, line - 4);
-        let endLine = Math.min(allLines.length - 1, line + 2);
+        let formattedHtml = '';
 
-        for (let i = startLine; i <= endLine; i++) {
-          let lineDiv = document.createElement('div');
-          lineDiv.className = 'json-line';
+        for (let i = 0; i < jsonText.length; i++) {
+          // Nueva línea
+          if (jsonText[i] === '\n' || i === 0) {
+            if (i !== 0) {
+              formattedHtml += '</span>\n';
+              line++;
+              column = 0;
+            }
 
-          // Añadir número de línea
-          let lineNumber = document.createElement('span');
-          lineNumber.className = 'line-number';
-          lineNumber.textContent = (i + 1) + ': ';
-          lineDiv.appendChild(lineNumber);
-
-          // Añadir contenido de la línea
-          let lineContent = document.createElement('span');
-          lineContent.textContent = allLines[i];
-
-          // Resaltar la línea con error
-          if (i === line - 1) {
-            lineDiv.classList.add('json-error-highlight');
+            // Añadir número de línea
+            formattedHtml += `<span class="line-number">${line}</span><span class="json-line">`;
           }
 
-          lineDiv.appendChild(lineContent);
-          jsonViewer.appendChild(lineDiv);
+          // Resaltar posición del error
+          if (i === errorPosition) {
+            formattedHtml += '<span class="json-error-highlight">';
+            isErrorHighlighted = true;
+          }
+
+          // Escapar caracteres HTML
+          let char = jsonText[i];
+          if (char === '<') char = '&lt;';
+          else if (char === '>') char = '&gt;';
+          else if (char === '&') char = '&amp;';
+
+          // Añadir carácter
+          if (char !== '\n' || i === 0) {
+            formattedHtml += char;
+            column++;
+          }
+
+          // Cerrar span de error después de algunos caracteres
+          if (isErrorHighlighted && (i >= errorPosition + 5 || i === jsonText.length - 1)) {
+            formattedHtml += '</span>';
+            isErrorHighlighted = false;
+          }
         }
 
-        errorDiv.appendChild(jsonViewer);
-      } else {
-        // Si no podemos determinar la posición, simplemente mostramos el mensaje
-        errorDiv.textContent = errorMessage;
+        // Cerrar el último span de línea
+        formattedHtml += '</span>';
+
+        viewerDiv.innerHTML = formattedHtml;
+        errorDiv.appendChild(viewerDiv);
       }
 
-      // Establecer el contenido del mensaje de error
-      errorMessage.innerHTML = '';
-      errorMessage.appendChild(errorDiv);
-
-      // Mostrar el contenedor de error
-      errorOverlay.style.display = 'block';
+      // Añadir al contenedor
+      errorContainer.appendChild(errorDiv);
     }
 
     function formatJson() {
       const input = jsonInput.value.trim();
-      console.log("Formateando JSON, longitud:", input.length);
-      errorOverlay.style.display = 'none';
+      errorContainer.innerHTML = '';
+      jsonStats.style.display = 'none';
 
       if (!input) {
-        treeView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
-        tableView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
+        showError('Please enter JSON data');
         parsedJson = null;
-        updateColumnVisibility();
+        updateViews();
         return;
       }
 
       try {
-        // Intentar parsear el JSON
         parsedJson = JSON.parse(input);
-        console.log("JSON parseado correctamente");
-
-        // Formatear el JSON con indentación
-        const formatted = JSON.stringify(parsedJson, null, 2);
-        jsonInput.value = formatted;
-
-        // Actualizar las vistas
-        renderTreeView(parsedJson);
-        renderTableView(parsedJson);
-
-        // Calcular estadísticas
-        calculateJsonStats(parsedJson);
-
-        // Activar las columnas por defecto después de analizar JSON
+        jsonInput.value = JSON.stringify(parsedJson, null, 2);
+        localStorage.setItem('jsonData', jsonInput.value);
         showTree = true;
         showTable = true;
-
-        // Actualizar la visibilidad de las columnas
         updateColumnVisibility();
-
-        // Guardar en localStorage
-        localStorage.setItem('jsonData', formatted);
+        updateViews();
+        calculateJsonStats(parsedJson);
       } catch (err) {
-        console.error("Error al parsear JSON:", err.message);
-        showJsonError(err.message, input);
-
-        // Mantener las vistas limpias
-        treeView.innerHTML = '<div class="empty-state">Corrige el JSON para visualizarlo</div>';
-        tableView.innerHTML = '<div class="empty-state">Corrige el JSON para visualizarlo</div>';
-
-        // Marcar como JSON inválido
+        showJsonError(`${err.message}`, input);
         parsedJson = null;
-        updateColumnVisibility();
+        updateViews();
       }
     }
 
     function clearAll() {
       jsonInput.value = '';
-      errorOverlay.style.display = 'none';
+      errorContainer.innerHTML = '';
       parsedJson = null;
       localStorage.removeItem('jsonData');
       jsonStats.style.display = 'none';
-      treeView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
-      tableView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
-      updateColumnVisibility();
+      searchStats.style.display = 'none';
+      updateViews();
     }
 
     function toggleColumn(column) {
@@ -1261,28 +1093,52 @@
     }
 
     function updateColumnVisibility() {
-      // Simplemente usar nuestra nueva función de inicialización
-      inicializarUI();
+      // Make sure at least one column is visible
+      if (!showInput && !showTree && !showTable) {
+        showInput = true;
+      }
+
+      // Update column display
+      inputColumn.style.display = showInput ? 'flex' : 'none';
+      treeColumn.style.display = showTree && parsedJson ? 'flex' : 'none';
+      tableColumn.style.display = showTable && parsedJson ? 'flex' : 'none';
+
+      // Calculate column widths
+      const visibleCount = [showInput, showTree && parsedJson, showTable && parsedJson].filter(Boolean).length;
+      const width = `${100 / visibleCount}%`;
+
+      if (showInput) inputColumn.style.width = width;
+      if (showTree && parsedJson) treeColumn.style.width = width;
+      if (showTable && parsedJson) tableColumn.style.width = width;
+
+      // Add empty state if needed
+      if (mainContent.children.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.textContent = 'All panels are hidden. Click the toggle buttons to show content.';
+        mainContent.appendChild(emptyState);
+      } else {
+        const emptyState = mainContent.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+      }
     }
 
     function updateViews() {
       if (parsedJson) {
         renderTreeView(parsedJson);
         renderTableView(parsedJson);
-        calculateJsonStats(parsedJson);
       } else {
-        treeView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
-        tableView.innerHTML = '<div class="empty-state">Pega tu JSON aquí o carga un ejemplo del menú</div>';
-        jsonStats.style.display = 'none';
+        treeContainer.innerHTML = '';
+        tableContainer.innerHTML = '';
       }
       updateColumnVisibility();
     }
 
     // Tree View Rendering
     function renderTreeView(data) {
-      treeView.innerHTML = '';
+      treeContainer.innerHTML = '';
       const treeRoot = createTreeNode(data);
-      treeView.appendChild(treeRoot);
+      treeContainer.appendChild(treeRoot);
     }
 
     function createTreeNode(data, key, level = 0) {
@@ -1301,10 +1157,10 @@
 
       if (isObject) {
         toggleBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      `;
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        `;
       } else {
         toggleBtn.style.visibility = 'hidden';
       }
@@ -1398,14 +1254,14 @@
 
     // Table View Rendering
     function renderTableView(data) {
-      tableView.innerHTML = '';
+      tableContainer.innerHTML = '';
 
       if (Array.isArray(data)) {
-        tableView.appendChild(createArrayTable(data));
+        tableContainer.appendChild(createArrayTable(data));
       } else if (typeof data === 'object' && data !== null) {
-        tableView.appendChild(createObjectTable(data));
+        tableContainer.appendChild(createObjectTable(data));
       } else {
-        tableView.textContent = String(data);
+        tableContainer.textContent = String(data);
       }
     }
 
@@ -1799,6 +1655,9 @@
         counts.boolean++;
       }
     }
+
+    // Initialize
+    updateColumnVisibility();
   </script>
 </body>
 
