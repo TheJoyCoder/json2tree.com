@@ -103,9 +103,46 @@
       height: 16px;
     }
 
+    /* Estilo mejorado para los botones de acción principales */
+    #format-btn,
+    #clear-btn,
+    #copy-btn,
+    #expand-all-tree,
+    #collapse-all-tree,
+    #expand-all-table,
+    #collapse-all-table {
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      background-color: var(--color-bg-secondary);
+      transition: all 0.2s ease;
+    }
+
+    #format-btn:hover,
+    #clear-btn:hover,
+    #copy-btn:hover,
+    #expand-all-tree:hover,
+    #collapse-all-tree:hover,
+    #expand-all-table:hover,
+    #collapse-all-table:hover {
+      background-color: var(--color-hover);
+      border-color: var(--color-text-secondary);
+    }
+
     .btn-group {
       display: flex;
       gap: 4px;
+    }
+
+    /* Estilos para el atajo de teclado */
+    .kbd-shortcut {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-left: 4px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
     }
 
     /* Main content and columns */
@@ -458,10 +495,36 @@
       padding: 12px;
       background-color: var(--color-bg-secondary);
       border-radius: 4px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: 8px;
       font-size: 0.875rem;
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      z-index: 1000;
+    }
+
+    .json-stats #stats-close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .json-stats #stats-close-btn:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.1);
     }
 
     .stat-label {
@@ -496,8 +559,8 @@
         </svg>
       </button>
       <div class="search-container">
-        <input type="text" id="search-input" placeholder="Buscar en JSON..." />
-        <button id="search-btn" title="Buscar">
+        <input type="text" id="search-input" placeholder="Search in JSON..." />
+        <button id="search-btn" title="Search">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
@@ -505,14 +568,14 @@
           </svg>
         </button>
         <div id="search-stats" class="search-stats" style="display: none;">
-          <span id="search-count">0</span> resultados
-          <button id="prev-result" title="Resultado anterior">
+          <span id="search-count">0</span> results
+          <button id="prev-result" title="Previous result">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
-          <button id="next-result" title="Siguiente resultado">
+          <button id="next-result" title="Next result">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
@@ -551,26 +614,55 @@
 
   <!-- Main content with columns -->
   <div id="error-container"></div>
+  <div id="json-stats" class="json-stats" style="display: none;">
+    <span class="stat-label">Stats</span>
+    <button id="stats-close-btn" class="error-close-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div><span class="stat-label">Objects:</span> <span id="object-count">0</span></div>
+    <div><span class="stat-label">Arrays:</span> <span id="array-count">0</span></div>
+    <div><span class="stat-label">Strings:</span> <span id="string-count">0</span></div>
+    <div><span class="stat-label">Numbers:</span> <span id="number-count">0</span></div>
+    <div><span class="stat-label">Booleans:</span> <span id="boolean-count">0</span></div>
+    <div><span class="stat-label">Nulls:</span> <span id="null-count">0</span></div>
+  </div>
   <div class="main-content" id="main-content">
     <!-- Input Column -->
     <div class="column" id="input-column">
       <div class="column-header">
         <div class="column-title">JSON Input</div>
         <div class="btn-group">
-          <button id="format-btn">Format</button>
-          <button id="clear-btn">Clear</button>
+          <button id="clear-btn" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              style="margin-right: 5px;">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Clear
+          </button>
+          <button id="copy-btn" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <button id="format-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Format
+          </button>
         </div>
       </div>
       <div class="column-content">
         <textarea id="json-input" placeholder="Paste your JSON here..."></textarea>
-        <div id="json-stats" class="json-stats" style="display: none;">
-          <div><span class="stat-label">Objetos:</span> <span id="object-count">0</span></div>
-          <div><span class="stat-label">Arrays:</span> <span id="array-count">0</span></div>
-          <div><span class="stat-label">Strings:</span> <span id="string-count">0</span></div>
-          <div><span class="stat-label">Números:</span> <span id="number-count">0</span></div>
-          <div><span class="stat-label">Booleanos:</span> <span id="boolean-count">0</span></div>
-          <div><span class="stat-label">Nulos:</span> <span id="null-count">0</span></div>
-        </div>
       </div>
     </div>
 
@@ -604,6 +696,7 @@
     const jsonInput = document.getElementById('json-input');
     const formatBtn = document.getElementById('format-btn');
     const clearBtn = document.getElementById('clear-btn');
+    const copyBtn = document.getElementById('copy-btn');
     const errorContainer = document.getElementById('error-container');
     const treeContainer = document.getElementById('tree-container');
     const tableContainer = document.getElementById('table-container');
@@ -634,6 +727,7 @@
     const numberCount = document.getElementById('number-count');
     const booleanCount = document.getElementById('boolean-count');
     const nullCount = document.getElementById('null-count');
+    const statsCloseBtn = document.getElementById('stats-close-btn');
 
     // State
     let parsedJson = null;
@@ -670,19 +764,31 @@
 
     // Cargar JSON guardado
     const savedJson = localStorage.getItem('jsonData');
-    if (savedJson) {
+    if (savedJson && savedJson.trim()) {
       jsonInput.value = savedJson;
+      clearBtn.style.display = 'flex'; // Mostrar botón Clear si hay contenido
       try {
         parsedJson = JSON.parse(savedJson);
+        copyBtn.style.display = 'flex'; // Mostrar el botón de copiar si hay JSON válido guardado
         updateViews();
       } catch (err) {
         // Ignorar si hay error en el JSON guardado
+        copyBtn.style.display = 'none'; // Ocultar el botón si el JSON guardado no es válido
       }
     }
+
+    // Update formatBtn text to show keyboard shortcut
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    formatBtn.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" style="margin-right: 5px;"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg> 
+            Format <span class="kbd-shortcut">${isMac ? '⌘' : 'Ctrl'}+Enter</span>`;
 
     // Event Listeners
     formatBtn.addEventListener('click', formatJson);
     clearBtn.addEventListener('click', clearAll);
+    copyBtn.addEventListener('click', copyJson);
     toggleInputBtn.addEventListener('click', () => toggleColumn('input'));
     toggleTreeBtn.addEventListener('click', () => toggleColumn('tree'));
     toggleTableBtn.addEventListener('click', () => toggleColumn('table'));
@@ -690,15 +796,29 @@
       const currentTheme = document.documentElement.getAttribute('data-theme');
       setTheme(currentTheme === 'light' ? 'dark' : 'light');
     });
+    statsCloseBtn.addEventListener('click', () => {
+      jsonStats.style.display = 'none';
+    });
+
+    // Add keyboard shortcut for formatting (Command+Enter or Control+Enter)
+    jsonInput.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        formatJson();
+      }
+    });
 
     // Save JSON data on change
     jsonInput.addEventListener('input', () => {
+      const inputValue = jsonInput.value.trim();
       localStorage.setItem('jsonData', jsonInput.value);
+
+      // Actualizar visibilidad del botón Clear
+      clearBtn.style.display = inputValue ? 'flex' : 'none';
     });
 
     // Auto-format JSON when pasting
     jsonInput.addEventListener('paste', (e) => {
-      // Uso setTimeout para dejar que primero se complete el evento paste
       setTimeout(() => {
         const pastedText = jsonInput.value.trim();
         if (pastedText) {
@@ -730,10 +850,10 @@
         if (childrenContainer && childrenContainer.style.display === 'none') {
           childrenContainer.style.display = 'block';
           btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
         }
       });
     });
@@ -745,10 +865,10 @@
         if (childrenContainer && childrenContainer.style.display !== 'none') {
           childrenContainer.style.display = 'none';
           btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      `;
         }
       });
     });
@@ -762,10 +882,10 @@
         if (nextRow && nextRow.style.display === 'none') {
           nextRow.style.display = 'table-row';
           btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
         }
       });
     });
@@ -778,10 +898,10 @@
         if (nextRow && nextRow.style.display !== 'none') {
           nextRow.style.display = 'none';
           btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      `;
         }
       });
     });
@@ -921,10 +1041,10 @@
             const toggleBtn = parentContent.querySelector('.tree-toggle');
             if (toggleBtn) {
               toggleBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              `;
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        `;
             }
           }
         }
@@ -985,11 +1105,11 @@
       const closeBtn = document.createElement('button');
       closeBtn.className = 'error-close-btn';
       closeBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      `;
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  `;
       closeBtn.addEventListener('click', () => {
         errorDiv.remove();
       });
@@ -1056,11 +1176,11 @@
       const closeBtn = document.createElement('button');
       closeBtn.className = 'error-close-btn';
       closeBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      `;
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  `;
       closeBtn.addEventListener('click', () => {
         errorDiv.remove();
       });
@@ -1218,9 +1338,9 @@
       if (/expected double-quoted property name/.test(errorMessage)) {
         // Error específico para propiedades que no están entre comillas
         return `<strong>Error:</strong> Falta comillas dobles en el nombre de propiedad.<br>
-               <strong>Posible solución:</strong> En JSON, todas las claves de objetos deben estar entre comillas dobles. Revisa que no hayas dejado una coma extra o que no hayas cerrado el objeto o array con el carácter equivocado.<br>
-               <strong>Ejemplo correcto:</strong> <code>{"propiedad": valor}</code><br>
-               <strong>Ejemplo incorrecto:</strong> <code>{propiedad: valor}</code>`;
+           <strong>Posible solución:</strong> En JSON, todas las claves de objetos deben estar entre comillas dobles. Revisa que no hayas dejado una coma extra o que no hayas cerrado el objeto o array con el carácter equivocado.<br>
+           <strong>Ejemplo correcto:</strong> <code>{"propiedad": valor}</code><br>
+           <strong>Ejemplo incorrecto:</strong> <code>{propiedad: valor}</code>`;
       } else if (/Unexpected token (.)/.test(errorMessage)) {
         const token = errorMessage.match(/Unexpected token (.)/)[1];
         let context = '';
@@ -1237,20 +1357,20 @@
 
         if (token === '{' || token === '[') {
           return `<strong>Error:</strong> Se encontró un carácter de apertura ${token} inesperado.<br>
-                 <strong>Posible solución:</strong> Verifica que no tengas caracteres de apertura duplicados o que no estés cerrando un objeto o array con el carácter equivocado.`;
+             <strong>Posible solución:</strong> Verifica que no tengas caracteres de apertura duplicados o que no estés cerrando un objeto o array con el carácter equivocado.`;
         } else if (token === '}' || token === ']') {
           return `<strong>Error:</strong> Se encontró un carácter de cierre ${token} inesperado.<br>
-                 <strong>Posible solución:</strong> Verifica que no tengas llave o corchete de cierre sin su correspondiente apertura. También comprueba que no hayas olvidado una coma entre elementos o que no tengas una coma extra después del último elemento.`;
+             <strong>Posible solución:</strong> Verifica que no tengas llave o corchete de cierre sin su correspondiente apertura. También comprueba que no hayas olvidado una coma entre elementos o que no tengas una coma extra después del último elemento.`;
         } else if (token === ',') {
           return `<strong>Error:</strong> Se encontró una coma inesperada.<br>
-                 <strong>Posible solución:</strong> Asegúrate de no tener comas extra después del último elemento en un objeto o array, o comas consecutivas. Ejemplo incorrecto: <code>{"a": 1, "b": 2,}</code> o <code>{"a": 1,, "b": 2}</code>`;
+             <strong>Posible solución:</strong> Asegúrate de no tener comas extra después del último elemento en un objeto o array, o comas consecutivas. Ejemplo incorrecto: <code>{"a": 1, "b": 2,}</code> o <code>{"a": 1,, "b": 2}</code>`;
         } else if (token === ':') {
           return `<strong>Error:</strong> Se encontró dos puntos inesperados.<br>
-                 <strong>Posible solución:</strong> Los dos puntos en JSON solo deben aparecer después de una clave de propiedad. Verifica que la clave sea una cadena válida entre comillas dobles. Ejemplo correcto: <code>"clave": valor</code>`;
+             <strong>Posible solución:</strong> Los dos puntos en JSON solo deben aparecer después de una clave de propiedad. Verifica que la clave sea una cadena válida entre comillas dobles. Ejemplo correcto: <code>"clave": valor</code>`;
         } else {
           return `<strong>Error:</strong> Se encontró un carácter inesperado "${token}".<br>
-                 <strong>Contexto:</strong> <code>...${context}...</code><br>
-                 <strong>Posible solución:</strong> Revisa la sintaxis JSON en esta posición.`;
+             <strong>Contexto:</strong> <code>...${context}...</code><br>
+             <strong>Posible solución:</strong> Revisa la sintaxis JSON en esta posición.`;
         }
       } else if (/unterminated string/.test(errorMessage)) {
         // Caso específico para cadenas sin terminar
@@ -1263,38 +1383,38 @@
         }
 
         return `<strong>Error:</strong> Cadena sin terminar - falta una comilla de cierre.<br>
-               <strong>Contexto:</strong> <code>...${context}...</code><br>
-               <strong>Posible solución:</strong> Añade una comilla doble (") al final de la cadena o verifica que no haya caracteres de comilla sin escapar dentro de la cadena.`;
+           <strong>Contexto:</strong> <code>...${context}...</code><br>
+           <strong>Posible solución:</strong> Añade una comilla doble (") al final de la cadena o verifica que no haya caracteres de comilla sin escapar dentro de la cadena.`;
       } else if (/Unexpected end of (JSON input|input)/.test(errorMessage)) {
         return `<strong>Error:</strong> El JSON está incompleto.<br>
-               <strong>Posible solución:</strong> Verifica que todas las llaves {}, corchetes [] y comillas " estén correctamente balanceados y cerrados.`;
+           <strong>Posible solución:</strong> Verifica que todas las llaves {}, corchetes [] y comillas " estén correctamente balanceados y cerrados.`;
       } else if (/Unexpected number/.test(errorMessage)) {
         return `<strong>Error:</strong> Número en formato incorrecto.<br>
-               <strong>Posible solución:</strong> Verifica que los números no tengan formatos inválidos como ceros iniciales (excepto para decimales), signos + explícitos, o que no estén usando notación científica incorrectamente.`;
+           <strong>Posible solución:</strong> Verifica que los números no tengan formatos inválidos como ceros iniciales (excepto para decimales), signos + explícitos, o que no estén usando notación científica incorrectamente.`;
       } else if (/Expected property name/.test(errorMessage)) {
         return `<strong>Error:</strong> Se esperaba un nombre de propiedad.<br>
-               <strong>Posible solución:</strong> En JSON, las claves de los objetos deben ser cadenas entre comillas dobles. Ejemplo correcto: <code>{"propiedad": valor}</code>`;
+           <strong>Posible solución:</strong> En JSON, las claves de los objetos deben ser cadenas entre comillas dobles. Ejemplo correcto: <code>{"propiedad": valor}</code>`;
       } else if (/Expected ':' after property name/.test(errorMessage)) {
         return `<strong>Error:</strong> Falta el carácter ':' después del nombre de la propiedad.<br>
-               <strong>Posible solución:</strong> En JSON, después de cada nombre de propiedad debe ir el carácter ':'. Ejemplo correcto: <code>{"propiedad": valor}</code>`;
+           <strong>Posible solución:</strong> En JSON, después de cada nombre de propiedad debe ir el carácter ':'. Ejemplo correcto: <code>{"propiedad": valor}</code>`;
       } else if (/Expected ',' or '}'/.test(errorMessage)) {
         return `<strong>Error:</strong> Se esperaba una coma o llave de cierre.<br>
-               <strong>Posible solución:</strong> Los pares clave-valor en los objetos deben estar separados por comas. Verifica que no falte una coma entre elementos o que el formato sea correcto.`;
+           <strong>Posible solución:</strong> Los pares clave-valor en los objetos deben estar separados por comas. Verifica que no falte una coma entre elementos o que el formato sea correcto.`;
       } else if (/Expected ',' or ']'/.test(errorMessage)) {
         return `<strong>Error:</strong> Se esperaba una coma o corchete de cierre.<br>
-               <strong>Posible solución:</strong> Los elementos en un array deben estar separados por comas. Verifica que no falte una coma entre elementos o que el formato sea correcto.`;
+           <strong>Posible solución:</strong> Los elementos en un array deben estar separados por comas. Verifica que no falte una coma entre elementos o que el formato sea correcto.`;
       } else if (/Invalid or unexpected token/.test(errorMessage)) {
         return `<strong>Error:</strong> Token inválido o inesperado.<br>
-               <strong>Posible solución:</strong> Esto suele ocurrir cuando las cadenas no están correctamente delimitadas con comillas dobles o cuando hay caracteres de control sin escapar dentro de una cadena.`;
+           <strong>Posible solución:</strong> Esto suele ocurrir cuando las cadenas no están correctamente delimitadas con comillas dobles o cuando hay caracteres de control sin escapar dentro de una cadena.`;
       } else if (/expected property name or '}'/i.test(errorMessage)) {
         return `<strong>Error:</strong> Se esperaba un nombre de propiedad o llave de cierre.<br>
-              <strong>Posible solución:</strong> Verifica que no existan comas adicionales al final del objeto o que no falte un nombre de propiedad después de una coma.`;
+          <strong>Posible solución:</strong> Verifica que no existan comas adicionales al final del objeto o que no falte un nombre de propiedad después de una coma.`;
       } else if (/expected ':' after property name/i.test(errorMessage)) {
         return `<strong>Error:</strong> Falta el carácter ':' después del nombre de la propiedad.<br>
-              <strong>Posible solución:</strong> En JSON, después de cada nombre de propiedad debe ir el carácter ':'. Ejemplo correcto: <code>{"propiedad": valor}</code>`;
+          <strong>Posible solución:</strong> En JSON, después de cada nombre de propiedad debe ir el carácter ':'. Ejemplo correcto: <code>{"propiedad": valor}</code>`;
       } else if (/unexpected non-whitespace character after JSON/i.test(errorMessage)) {
         return `<strong>Error:</strong> Caracteres adicionales después del JSON.<br>
-              <strong>Posible solución:</strong> Un documento JSON válido debe contener un único objeto o array en la raíz. Elimina cualquier texto adicional después del objeto/array principal.`;
+          <strong>Posible solución:</strong> Un documento JSON válido debe contener un único objeto o array en la raíz. Elimina cualquier texto adicional después del objeto/array principal.`;
       }
 
       // Si no hay un mensaje específico, no devolvemos nada (eliminamos el mensaje genérico)
@@ -1319,6 +1439,7 @@
         localStorage.setItem('jsonData', jsonInput.value);
         showTree = true;
         showTable = true;
+        clearBtn.style.display = 'flex'; // Mostrar el botón Clear cuando hay JSON válido
         updateColumnVisibility();
         updateViews();
         calculateJsonStats(parsedJson);
@@ -1336,7 +1457,37 @@
       localStorage.removeItem('jsonData');
       jsonStats.style.display = 'none';
       searchStats.style.display = 'none';
+      copyBtn.style.display = 'none'; // Ocultar el botón de copiar al limpiar
+      clearBtn.style.display = 'none'; // Ocultar el botón de limpiar
       updateViews();
+    }
+
+    function copyJson() {
+      const input = jsonInput.value.trim();
+      if (!input) {
+        showError('There is no content to copy');
+        return;
+      }
+
+      // Copiar al portapapeles
+      navigator.clipboard.writeText(input)
+        .then(() => {
+          // Guardar el contenido original del botón
+          const originalContent = copyBtn.innerHTML;
+          // Extraer el SVG
+          const svgContent = copyBtn.querySelector('svg').outerHTML;
+
+          // Actualizar con el mensaje de éxito manteniendo el icono
+          copyBtn.innerHTML = `${svgContent} Copied!`;
+
+          // Restaurar después de 2 segundos
+          setTimeout(() => {
+            copyBtn.innerHTML = originalContent;
+          }, 2000);
+        })
+        .catch(err => {
+          showError('Error copying: ' + err.message);
+        });
     }
 
     function toggleColumn(column) {
@@ -1386,9 +1537,11 @@
       if (parsedJson) {
         renderTreeView(parsedJson);
         renderTableView(parsedJson);
+        copyBtn.style.display = 'flex'; // Mostrar el botón de copiar cuando hay JSON válido
       } else {
         treeContainer.innerHTML = '';
         tableContainer.innerHTML = '';
+        copyBtn.style.display = 'none'; // Ocultar el botón de copiar cuando no hay JSON válido
       }
       updateColumnVisibility();
     }
@@ -1416,10 +1569,10 @@
 
       if (isObject) {
         toggleBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        `;
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    `;
       } else {
         toggleBtn.style.visibility = 'hidden';
       }
@@ -1501,10 +1654,10 @@
         if (level >= 2) {
           childrenContainer.style.display = 'none';
           toggleBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      `;
         }
       }
 
@@ -1557,10 +1710,10 @@
           const toggleBtn = document.createElement('span');
           toggleBtn.className = 'table-toggle';
           toggleBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
           keyCell.appendChild(toggleBtn);
         }
 
@@ -1655,10 +1808,10 @@
           const toggleBtn = document.createElement('span');
           toggleBtn.className = 'table-toggle';
           toggleBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          `;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
           indexCell.appendChild(toggleBtn);
         }
 
